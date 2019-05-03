@@ -1,0 +1,154 @@
+startshape A ( 15 ) [ b 0.5 sat 0.5 h 0..360 ]
+
+//Renders available in imgur album:
+
+// https://imgur.com/a/IpGrtNN
+
+//YSO, YSU, YSX, YTG
+//BBS, BBT, BBU, BBV, BBW, BBX
+//PSY, PTC, PTD, PTK, PTM
+//PTS, PUG, ZPJ, ZPO, ZPS
+
+CF::MinimumSize = 0.01
+CF::Impure = 1
+
+//The algorithm works by dividing a square into 4
+//Each quadrant has a random transformation applied
+//and then divides the next square into 4...
+
+//When n == 0 a square is drawn.  The transformations
+//used are symmetrical for squares so the full grid shape
+//will be preserved.
+
+
+//Transformation vector:
+//Each transformation has a random 4 bit integer in
+//this vector.  The 4 bits of each vector item determine
+//if the transformation should be applied to one of the
+//four sections the square is divided into
+
+//The vector items are:
+// brightness, hue, saturation,
+// rotate 90, rotate 180,
+// flip 45, flip 135
+//
+//Note: brightness uses rand(7)+1 so that there will
+//      always be asymmetry 
+
+v =  ( randint(7) + 1 ) ,  randint(15), randint(15), 
+     randint(15), randint(15),
+     randint(15), randint(15)
+
+
+//This shape divides a square into 4 sections and transforms
+//each using the B shape
+shape A ( natural n ) 
+{
+    if ( n == 0 )
+    {
+        SQUARE [ ]
+    }
+    else
+    {
+        B ( n--1, 1, 127 ) [ s 0.5 x 0.25  y 0.25   ]
+        B ( n--1, 2, 127 ) [ s 0.5 x -0.25 y 0.25   ]
+        B ( n--1, 4, 127 ) [ s 0.5 x -0.25 y -0.25  ]
+        B ( n--1, 8, 127 ) [ s 0.5 x 0.25  y -0.25  ]
+    }
+}
+
+//This shape applies all transformations according to
+//the random ints in vector v.  It applies the transformations
+//one by one using 'o' to keep track of what transforms have been
+//applied
+shape B ( natural n, number m, number o )
+{
+    if ( bitand ( o, 1 ) == 1   )
+    {
+        if ( bitand( v[0], m ) == m )
+        {
+            B ( n, m, bitxor ( o, 1 ) ) [ b 0.15 ]
+        }
+        else
+        {
+            B ( n, m, bitxor ( o, 1 ) ) [ b -0.15 ]
+        }
+    }
+
+    else if ( bitand ( o, 2 ) == 2   )
+    {
+        if ( bitand( v[1], m ) == m )
+        {
+            B ( n, m, bitxor ( o, 2 ) ) [ h 15 ]
+        }
+        else
+        {
+            B ( n, m, bitxor ( o, 2 ) ) [ h -15 ]
+        }
+    }
+    else if ( bitand ( o, 4 ) == 4   )
+    {
+        if ( bitand( v[2], m ) == m )
+        {
+            B ( n, m, bitxor ( o, 4 ) ) [ sat 0.15 ]
+        }
+        else
+        {
+            B ( n, m, bitxor ( o, 4 ) ) [ sat -0.15 ]
+        }
+    }
+
+    else if ( bitand ( o, 8 ) == 8   )
+    {
+        if ( bitand( v[3], m ) == m )
+        {
+            B ( n, m, bitxor ( o, 8 ) ) [ r 90 ]
+        }
+        else
+        {
+            B ( n, m, bitxor ( o, 8 ) ) [ ]
+        }
+    }
+
+    else if ( bitand ( o, 16 ) == 16   )
+    {
+        if ( bitand( v[4], m ) == m )
+        {
+            B ( n, m, bitxor ( o, 16 ) ) [ r 180 ]
+        }
+        else
+        {
+            B ( n, m, bitxor ( o, 16 ) ) [ ]
+        }
+    }
+
+    else if ( bitand ( o, 32 ) == 32   )
+    {
+        if ( bitand( v[5], m ) == m )
+        {
+            B ( n, m, bitxor ( o, 32 ) ) [ flip 45 ]
+        }
+        else
+        {
+            B ( n, m, bitxor ( o, 32 ) ) [ ]
+        }
+    }
+
+    else if ( bitand ( o, 64 ) == 64   )
+    {
+        if ( bitand( v[6], m ) == m )
+        {
+            B ( n, m, bitxor ( o, 64 ) ) [ flip 135 ]
+        }
+        else
+        {
+            B ( n, m, bitxor ( o, 64 ) ) [ ]
+        }
+    }
+ 
+    else
+    {
+       A ( n--1 ) []
+    }
+}
+
